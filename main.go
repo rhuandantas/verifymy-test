@@ -1,16 +1,6 @@
 package main
 
-type WebServer struct {
-}
-
-func NewWebServer() (*WebServer, error) {
-	return &WebServer{}, nil
-}
-
-func (ws *WebServer) Start() {
-
-}
-
+//go:generate wire
 func main() {
 	server, err := InitializeWebServer()
 	if err != nil {

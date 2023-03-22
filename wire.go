@@ -1,13 +1,15 @@
+// wire.go
 //go:build wireinject
 // +build wireinject
 
-// wire.go
-
 package main
 
-import "github.com/google/wire"
+import (
+	"github.com/google/wire"
+	"github.com/rhuandantas/verifymy-test/internal/server"
+)
 
-func InitializeWebServer() (*WebServer, error) {
-	wire.Build(NewWebServer)
-	return &WebServer{}, nil
+func InitializeWebServer() (*server.HttpServer, error) {
+	wire.Build(server.NewAPIServer)
+	return &server.HttpServer{}, nil
 }
