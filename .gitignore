@@ -15,3 +15,4 @@
 # vendor/
 .idea
 *_gen.go
+.mysql-data

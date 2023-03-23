@@ -1,0 +1,18 @@
+app:
+  name: verify-my-service
+  version: 1.0.0
+
+server:
+  host: 127.0.0.1:3000
+
+db:
+  mysql:
+    host: 127.0.0.1
+    port: 3306
+    database: verifymy
+    schema: user
+    password-key: DB_USER_PASS
+    user-key: DB_USER_NAME
+
+logs:
+  level: debug

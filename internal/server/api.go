@@ -6,9 +6,9 @@ import (
 	"github.com/joomcode/errorx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/rhuandantas/verifymy-test/internal"
+	"github.com/rhuandantas/verifymy-test/internal/config"
 	"github.com/rhuandantas/verifymy-test/internal/handlers"
-	"github.com/rhuandantas/verifymy-test/log"
+	"github.com/rhuandantas/verifymy-test/internal/log"
 	"go.uber.org/zap"
 )
 
@@ -16,13 +16,13 @@ type HttpServer struct {
 	appName     *string
 	host        string
 	Server      *echo.Echo
-	config      internal.ConfigProvider
+	config      config.ConfigProvider
 	logger      log.SimpleLogger
 	userHandler *handlers.UserHandler
 }
 
 // NewAPIServer creates the main server with all configurations necessary
-func NewAPIServer(config internal.ConfigProvider, logger log.SimpleLogger, userHandler *handlers.UserHandler) *HttpServer {
+func NewAPIServer(config config.ConfigProvider, logger log.SimpleLogger, userHandler *handlers.UserHandler) *HttpServer {
 	appName := config.GetStringOrDefault("app.name", "verify-my-service")
 	host := config.GetStringOrDefault("server.host", "0.0.0.0:8080")
 

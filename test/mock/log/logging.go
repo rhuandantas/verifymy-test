@@ -5,7 +5,6 @@
 package mock_log
 
 import (
-	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,9 +34,9 @@ func (m *MockSimpleLogger) EXPECT() *MockSimpleLoggerMockRecorder {
 }
 
 // Debug mocks base method.
-func (m *MockSimpleLogger) Debug(ctx context.Context, args ...interface{}) {
+func (m *MockSimpleLogger) Debug(args ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
+	varargs := []interface{}{}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -45,16 +44,15 @@ func (m *MockSimpleLogger) Debug(ctx context.Context, args ...interface{}) {
 }
 
 // Debug indicates an expected call of Debug.
-func (mr *MockSimpleLoggerMockRecorder) Debug(ctx interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockSimpleLoggerMockRecorder) Debug(args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Debug", reflect.TypeOf((*MockSimpleLogger)(nil).Debug), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Debug", reflect.TypeOf((*MockSimpleLogger)(nil).Debug), args...)
 }
 
 // Debugf mocks base method.
-func (m *MockSimpleLogger) Debugf(ctx context.Context, template string, args ...interface{}) {
+func (m *MockSimpleLogger) Debugf(template string, args ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, template}
+	varargs := []interface{}{template}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -62,16 +60,16 @@ func (m *MockSimpleLogger) Debugf(ctx context.Context, template string, args ...
 }
 
 // Debugf indicates an expected call of Debugf.
-func (mr *MockSimpleLoggerMockRecorder) Debugf(ctx, template interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockSimpleLoggerMockRecorder) Debugf(template interface{}, args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, template}, args...)
+	varargs := append([]interface{}{template}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Debugf", reflect.TypeOf((*MockSimpleLogger)(nil).Debugf), varargs...)
 }
 
 // Error mocks base method.
-func (m *MockSimpleLogger) Error(ctx context.Context, args ...interface{}) {
+func (m *MockSimpleLogger) Error(args ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
+	varargs := []interface{}{}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -79,16 +77,15 @@ func (m *MockSimpleLogger) Error(ctx context.Context, args ...interface{}) {
 }
 
 // Error indicates an expected call of Error.
-func (mr *MockSimpleLoggerMockRecorder) Error(ctx interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockSimpleLoggerMockRecorder) Error(args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Error", reflect.TypeOf((*MockSimpleLogger)(nil).Error), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Error", reflect.TypeOf((*MockSimpleLogger)(nil).Error), args...)
 }
 
 // Errorf mocks base method.
-func (m *MockSimpleLogger) Errorf(ctx context.Context, template string, args ...interface{}) {
+func (m *MockSimpleLogger) Errorf(template string, args ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, template}
+	varargs := []interface{}{template}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -96,16 +93,16 @@ func (m *MockSimpleLogger) Errorf(ctx context.Context, template string, args ...
 }
 
 // Errorf indicates an expected call of Errorf.
-func (mr *MockSimpleLoggerMockRecorder) Errorf(ctx, template interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockSimpleLoggerMockRecorder) Errorf(template interface{}, args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, template}, args...)
+	varargs := append([]interface{}{template}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Errorf", reflect.TypeOf((*MockSimpleLogger)(nil).Errorf), varargs...)
 }
 
 // Info mocks base method.
-func (m *MockSimpleLogger) Info(ctx context.Context, args ...interface{}) {
+func (m *MockSimpleLogger) Info(args ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
+	varargs := []interface{}{}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -113,16 +110,15 @@ func (m *MockSimpleLogger) Info(ctx context.Context, args ...interface{}) {
 }
 
 // Info indicates an expected call of Info.
-func (mr *MockSimpleLoggerMockRecorder) Info(ctx interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockSimpleLoggerMockRecorder) Info(args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockSimpleLogger)(nil).Info), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockSimpleLogger)(nil).Info), args...)
 }
 
 // Infof mocks base method.
-func (m *MockSimpleLogger) Infof(ctx context.Context, template string, args ...interface{}) {
+func (m *MockSimpleLogger) Infof(template string, args ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, template}
+	varargs := []interface{}{template}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -130,16 +126,16 @@ func (m *MockSimpleLogger) Infof(ctx context.Context, template string, args ...i
 }
 
 // Infof indicates an expected call of Infof.
-func (mr *MockSimpleLoggerMockRecorder) Infof(ctx, template interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockSimpleLoggerMockRecorder) Infof(template interface{}, args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, template}, args...)
+	varargs := append([]interface{}{template}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Infof", reflect.TypeOf((*MockSimpleLogger)(nil).Infof), varargs...)
 }
 
 // Warn mocks base method.
-func (m *MockSimpleLogger) Warn(ctx context.Context, args ...interface{}) {
+func (m *MockSimpleLogger) Warn(args ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
+	varargs := []interface{}{}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -147,16 +143,15 @@ func (m *MockSimpleLogger) Warn(ctx context.Context, args ...interface{}) {
 }
 
 // Warn indicates an expected call of Warn.
-func (mr *MockSimpleLoggerMockRecorder) Warn(ctx interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockSimpleLoggerMockRecorder) Warn(args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Warn", reflect.TypeOf((*MockSimpleLogger)(nil).Warn), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Warn", reflect.TypeOf((*MockSimpleLogger)(nil).Warn), args...)
 }
 
 // Warnf mocks base method.
-func (m *MockSimpleLogger) Warnf(ctx context.Context, template string, args ...interface{}) {
+func (m *MockSimpleLogger) Warnf(template string, args ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, template}
+	varargs := []interface{}{template}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -164,8 +159,8 @@ func (m *MockSimpleLogger) Warnf(ctx context.Context, template string, args ...i
 }
 
 // Warnf indicates an expected call of Warnf.
-func (mr *MockSimpleLoggerMockRecorder) Warnf(ctx, template interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockSimpleLoggerMockRecorder) Warnf(template interface{}, args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, template}, args...)
+	varargs := append([]interface{}{template}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Warnf", reflect.TypeOf((*MockSimpleLogger)(nil).Warnf), varargs...)
 }

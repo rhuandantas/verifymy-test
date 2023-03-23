@@ -2,10 +2,9 @@ package log
 
 import (
 	"fmt"
-	"github.com/rhuandantas/verifymy-test/internal"
+	"github.com/rhuandantas/verifymy-test/internal/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"log"
 )
 
 //go:generate mockgen -source=$GOFILE -package=mock_log -destination=../test/mock/log/$GOFILE
@@ -22,8 +21,7 @@ type SimpleLogger interface {
 }
 
 type SimpleLoggerImpl struct {
-	base   *zap.SugaredLogger
-	Logger *log.Logger
+	base *zap.SugaredLogger
 }
 
 func (il *SimpleLoggerImpl) Debugf(template string, args ...interface{}) {
@@ -58,7 +56,7 @@ func (il *SimpleLoggerImpl) Warn(args ...interface{}) {
 	il.base.Warn(args...)
 }
 
-func NewLogger(configStore internal.ConfigProvider) SimpleLogger {
+func NewLogger(configStore config.ConfigProvider) SimpleLogger {
 	zapLevel := zap.NewAtomicLevel()
 	err := zapLevel.UnmarshalText([]byte(configStore.GetString("log.level")))
 	if err != nil {

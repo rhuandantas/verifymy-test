@@ -1,6 +1,7 @@
-package internal
+package config
 
 import (
+	"fmt"
 	"github.com/joomcode/errorx"
 	"github.com/labstack/gommon/log"
 	"github.com/spf13/viper"
@@ -12,6 +13,7 @@ type ConfigProvider interface {
 	GetString(path string) string
 	GetInt(path string) int
 	GetBool(path string) bool
+	GetEnv(path string) string
 }
 
 type LocalConfigProvider struct {
@@ -48,14 +50,17 @@ func (c *LocalConfigProvider) GetBool(path string) bool {
 	return c.config.GetBool(path)
 }
 
+func (c *LocalConfigProvider) GetEnv(path string) string {
+	return fmt.Sprint(c.config.Get(path))
+}
+
 func (c *LocalConfigProvider) initConfig() {
 	log.Info("Initializing service configuration")
 
 	c.config.SetConfigFile("yml")
 	c.config.SetConfigName("config")
 	c.config.AddConfigPath(".")
-	c.config.AddConfigPath("./config")
-	c.config.AddConfigPath("./internal/config")
+	c.config.AddConfigPath("./resources")
 
 	if err := c.config.ReadInConfig(); err != nil {
 		log.Warn(errorx.Decorate(err, "Failed to load configuration file."))
