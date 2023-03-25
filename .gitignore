@@ -16,3 +16,4 @@
 .idea
 *_gen.go
 .mysql-data
+./test/mock
