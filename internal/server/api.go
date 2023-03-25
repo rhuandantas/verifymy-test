@@ -7,8 +7,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rhuandantas/verifymy-test/internal/config"
-	"github.com/rhuandantas/verifymy-test/internal/handlers"
 	"github.com/rhuandantas/verifymy-test/internal/log"
+	"github.com/rhuandantas/verifymy-test/internal/server/handlers"
 	"go.uber.org/zap"
 )
 
@@ -35,6 +35,7 @@ func NewAPIServer(config config.ConfigProvider, logger log.SimpleLogger, userHan
 	app.Use(middleware.GzipWithConfig(middleware.GzipConfig{Level: 5}))
 	app.Use(middleware.Recover())
 	app.Use(middleware.CORS())
+	app.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
 	app.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:    true,
 		LogStatus: true,

@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-//go:generate mockgen -source=$GOFILE -package=mock_log -destination=../test/mock/log/$GOFILE
+//go:generate mockgen -source=$GOFILE -package=mock_log -destination=../../test/mock/log/$GOFILE
 
 type SimpleLogger interface {
 	Debugf(template string, args ...interface{})

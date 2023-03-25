@@ -7,6 +7,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+//go:generate mockgen -source=$GOFILE -package=mock_config -destination=../../test/mock/config/$GOFILE
+
 // ConfigProvider Provider interface for retrieving service configuration
 type ConfigProvider interface {
 	GetStringOrDefault(path string, defaultValue string) string
