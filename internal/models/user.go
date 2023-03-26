@@ -9,7 +9,7 @@ type User struct {
 	UserId   int    `json:"user_id" query:"user_id"  db:"user_id" gorm:"primaryKey;autoIncrement:true"`
 	Name     string `json:"name" query:"name"  db:"name"`
 	Age      int    `json:"age" query:"age"  db:"age"`
-	Email    string `json:"email" query:"email"  db:"email" gorm:"size:255;index:idx_email,unique"`
+	Email    string `json:"email" validate:"required" query:"email"  db:"email" gorm:"size:255;index:idx_email,unique"`
 	Password string `json:"password,omitempty" query:"password" db:"password"`
 	Address  string `json:"address" db:"address"`
 }

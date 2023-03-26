@@ -2,11 +2,16 @@ package repo
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/rhuandantas/verifymy-test/internal/log"
 	"github.com/rhuandantas/verifymy-test/internal/models"
 )
 
 //go:generate mockgen -source=$GOFILE -package=mock_repo -destination=../../test/mock/repo/$GOFILE
+var (
+	RecordNotFoundErr = errors.New("record not found")
+)
 
 type UserRepo interface {
 	Create(ctx context.Context, user models.User) (*models.User, error)
@@ -68,6 +73,10 @@ func (uri *UserRepoImpl) Delete(ctx context.Context, userId int) (bool, error) {
 func (uri *UserRepoImpl) GetByID(ctx context.Context, userId int) (*models.User, error) {
 	user := &models.User{UserId: userId}
 	if result := uri.db.GetDB().WithContext(ctx).First(user); result.Error != nil {
+		if result.Error.Error() == RecordNotFoundErr.Error() {
+			return nil, errors.New(fmt.Sprintf("User not found with id %d", userId))
+		}
+
 		return nil, result.Error
 	}
 
@@ -86,8 +95,8 @@ func (uri *UserRepoImpl) GetByEmail(ctx context.Context, email string) (*models.
 
 func (uri *UserRepoImpl) GetUsers(ctx context.Context, offset, page int) (users []*models.User, err error) {
 	if result := uri.db.GetDB().WithContext(ctx).
-		Offset(offset).
-		Limit(page).
+		Offset(page).
+		Limit(offset).
 		Select("user_id", "name", "age", "email", "address").
 		Find(&users); result.Error != nil {
 		return nil, result.Error

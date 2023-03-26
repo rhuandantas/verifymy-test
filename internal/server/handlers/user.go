@@ -1,13 +1,15 @@
 package handlers
 
 import (
-	"errors"
+	"github.com/joomcode/errorx"
 	"github.com/labstack/echo/v4"
-	"github.com/rhuandantas/verifymy-test/internal/auth"
+	errx "github.com/rhuandantas/verifymy-test/internal/errors"
+	"github.com/rhuandantas/verifymy-test/internal/log"
 	"github.com/rhuandantas/verifymy-test/internal/models"
 	"github.com/rhuandantas/verifymy-test/internal/repo"
+	serverErr "github.com/rhuandantas/verifymy-test/internal/server/error"
+	"github.com/rhuandantas/verifymy-test/internal/server/middlewares/auth"
 	"github.com/rhuandantas/verifymy-test/internal/util"
-	"net/http"
 	"strconv"
 )
 
@@ -15,13 +17,15 @@ type UserHandler struct {
 	validator *util.CustomValidator
 	userRepo  repo.UserRepo
 	token     *auth.JwtToken
+	logger    log.SimpleLogger
 }
 
-func NewUserHandler(validator *util.CustomValidator, userRepo repo.UserRepo, jwt *auth.JwtToken) *UserHandler {
+func NewUserHandler(validator *util.CustomValidator, userRepo repo.UserRepo, jwt *auth.JwtToken, logger log.SimpleLogger) *UserHandler {
 	return &UserHandler{
 		validator: validator,
 		userRepo:  userRepo,
 		token:     jwt,
+		logger:    logger,
 	}
 }
 
@@ -42,31 +46,23 @@ func (uh *UserHandler) create(ctx echo.Context) error {
 	)
 
 	if err = ctx.Bind(&user); err != nil {
-		return ctx.String(http.StatusBadRequest, err.Error())
+		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
 	}
 
 	if err = uh.validator.ValidateStruct(user); err != nil {
-		return ctx.String(http.StatusBadRequest, err.Error())
+		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
 	}
 
-	userDTO := models.User{
-		Name:     user.Name,
-		Age:      user.Age,
-		Email:    user.Email,
-		Address:  user.Address,
-		Password: user.Password,
-	}
-
-	res, err := uh.userRepo.Create(ctx.Request().Context(), userDTO)
+	res, err := uh.userRepo.Create(ctx.Request().Context(), user)
 	if err != nil {
-		return ctx.String(http.StatusInternalServerError, err.Error())
+		return serverErr.HandleError(ctx, errorx.InternalError.New(err.Error()))
 	}
 
 	if res != nil {
 		res.Password = ""
 	}
 
-	return ctx.JSON(http.StatusCreated, res)
+	return serverErr.ResponseJson(ctx, res)
 }
 
 func (uh *UserHandler) update(ctx echo.Context) error {
@@ -76,73 +72,73 @@ func (uh *UserHandler) update(ctx echo.Context) error {
 	)
 
 	if err = ctx.Bind(&user); err != nil {
-		return ctx.String(http.StatusBadRequest, err.Error())
+		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
 	}
 
 	if err = uh.validator.ValidateStruct(user); err != nil {
-		return ctx.String(http.StatusBadRequest, err.Error())
+		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
 	}
 
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, err.Error())
+		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
 	}
 
 	res, err := uh.userRepo.Update(ctx.Request().Context(), id, user)
 	if err != nil {
-		return ctx.String(500, err.Error())
+		return serverErr.HandleError(ctx, errorx.InternalError.New(err.Error()))
 	}
 
 	res.Password = ""
-	return ctx.JSON(http.StatusOK, res)
+	return serverErr.ResponseJson(ctx, res)
 }
 
 func (uh *UserHandler) delete(ctx echo.Context) error {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, err.Error())
+		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
 	}
 
 	res, err := uh.userRepo.Delete(ctx.Request().Context(), id)
 	if err != nil {
-		return ctx.String(500, err.Error())
+		return serverErr.HandleError(ctx, errorx.InternalError.New(err.Error()))
 	}
 
-	return ctx.JSON(http.StatusOK, res)
+	return serverErr.ResponseJson(ctx, res)
 }
 
 func (uh *UserHandler) getById(ctx echo.Context) error {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, err.Error())
+		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
 	}
 
 	res, err := uh.userRepo.GetByID(ctx.Request().Context(), id)
 	if err != nil {
-		return ctx.String(500, err.Error())
+		return serverErr.HandleError(ctx, errorx.InternalError.New(err.Error()))
 	}
 	res.Password = ""
 
-	return ctx.JSON(http.StatusOK, res)
+	return serverErr.ResponseJson(ctx, res)
 }
 
 func (uh *UserHandler) getUsers(ctx echo.Context) error {
 	page, err := strconv.Atoi(ctx.QueryParam("page"))
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, err.Error())
+		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
 	}
 
 	offset, err := strconv.Atoi(ctx.QueryParam("size"))
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, err.Error())
+		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
 	}
 
 	res, err := uh.userRepo.GetUsers(ctx.Request().Context(), offset, page)
 	if err != nil {
-		return ctx.String(500, err.Error())
+		return serverErr.HandleError(ctx, errorx.InternalError.New(err.Error()))
 	}
 
-	return ctx.JSON(http.StatusOK, res)
+	return serverErr.ResponseJson(ctx, res)
 }
 
 func (uh *UserHandler) Login(ctx echo.Context) error {
@@ -152,27 +148,26 @@ func (uh *UserHandler) Login(ctx echo.Context) error {
 	)
 
 	if err = ctx.Bind(&user); err != nil {
-		return ctx.JSON(http.StatusBadRequest, err.Error())
+		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
 	}
 
 	if user.Email == "" || user.Password == "" {
-		return ctx.JSON(http.StatusUnauthorized, errors.New("email or password invalid"))
+		return serverErr.HandleError(ctx, errx.Unauthorized.New("email or password invalid"))
 	}
 
 	res, err := uh.userRepo.GetByEmail(ctx.Request().Context(), user.Email)
 	if err != nil {
-		return ctx.JSON(http.StatusUnauthorized, errors.New("email or password invalid"))
+		return serverErr.HandleError(ctx, errx.Unauthorized.New("email or password invalid"))
 	}
 
 	if err = user.VerifyPassword(res.Password); err != nil {
-		return ctx.JSON(http.StatusUnauthorized, err)
+		return serverErr.HandleError(ctx, errx.Unauthorized.New(err.Error()))
 	}
 
 	token, err := uh.token.GenerateToken(user.Email)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, err)
+		return serverErr.HandleError(ctx, errorx.InternalError.New(err.Error()))
 	}
-	ctx.Response().Header().Set("token", token)
 
-	return ctx.JSON(http.StatusOK, "authorized")
+	return serverErr.ResponseJson(ctx, echo.Map{"token": token})
 }
