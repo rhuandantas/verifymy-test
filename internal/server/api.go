@@ -13,16 +13,17 @@ import (
 )
 
 type HttpServer struct {
-	appName     *string
-	host        string
-	Server      *echo.Echo
-	config      config.ConfigProvider
-	logger      log.SimpleLogger
-	userHandler *handlers.UserHandler
+	appName       *string
+	host          string
+	Server        *echo.Echo
+	config        config.ConfigProvider
+	logger        log.SimpleLogger
+	userHandler   *handlers.UserHandler
+	healthHandler *handlers.HealthCheck
 }
 
 // NewAPIServer creates the main server with all configurations necessary
-func NewAPIServer(config config.ConfigProvider, logger log.SimpleLogger, userHandler *handlers.UserHandler) *HttpServer {
+func NewAPIServer(config config.ConfigProvider, logger log.SimpleLogger, userHandler *handlers.UserHandler, healthHandler *handlers.HealthCheck) *HttpServer {
 	appName := config.GetStringOrDefault("app.name", "verify-my-service")
 	host := config.GetStringOrDefault("server.host", "0.0.0.0:8080")
 
@@ -50,17 +51,19 @@ func NewAPIServer(config config.ConfigProvider, logger log.SimpleLogger, userHan
 	}))
 
 	return &HttpServer{
-		appName:     &appName,
-		host:        host,
-		Server:      app,
-		config:      config,
-		logger:      logger,
-		userHandler: userHandler,
+		appName:       &appName,
+		host:          host,
+		Server:        app,
+		config:        config,
+		logger:        logger,
+		userHandler:   userHandler,
+		healthHandler: healthHandler,
 	}
 }
 
 func (hs *HttpServer) RegisterHandlers() {
 	hs.userHandler.RegisterRoutes(hs.Server)
+	hs.healthHandler.RegisterHealth(hs.Server)
 }
 
 // Start starts an application on specific port

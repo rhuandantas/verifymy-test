@@ -68,8 +68,7 @@ func NewLogger(configStore config.ConfigProvider) SimpleLogger {
 		Level:       zapLevel,
 		OutputPaths: []string{"stdout"},
 		EncoderConfig: zapcore.EncoderConfig{
-			MessageKey: "message",
-
+			MessageKey:  "message",
 			LevelKey:    "level",
 			EncodeLevel: zapcore.CapitalLevelEncoder,
 

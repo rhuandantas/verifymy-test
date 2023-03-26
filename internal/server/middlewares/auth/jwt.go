@@ -4,7 +4,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/rhuandantas/verifymy-test/internal/config"
-	"net/http"
+	"github.com/rhuandantas/verifymy-test/internal/errors"
+	error2 "github.com/rhuandantas/verifymy-test/internal/server/error"
 	"strings"
 	"time"
 )
@@ -26,7 +27,8 @@ func NewJwtToken(config config.ConfigProvider) *JwtToken {
 }
 
 type jwtCustomClaims struct {
-	Email string `json:"email"`
+	Email   string `json:"email"`
+	IsAdmin bool
 	jwt.RegisteredClaims
 }
 
@@ -34,6 +36,7 @@ func (jt *JwtToken) GenerateToken(email string) (string, error) {
 	secret := []byte(jt.config.GetEnv("AUTH_SECRET"))
 	claims := &jwtCustomClaims{
 		email,
+		true,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 1)),
 		},
@@ -53,16 +56,20 @@ func (jt *JwtToken) GenerateToken(email string) (string, error) {
 func (jt *JwtToken) VerifyToken(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		tokenStr := jt.getToken(c)
+		if tokenStr == "" {
+			return error2.HandleError(c, errors.Unauthorized.New("authentication key not found"))
+		}
+
 		secret := []byte(jt.config.GetEnv("AUTH_SECRET"))
 		tkn, err := jwt.ParseWithClaims(tokenStr, &jwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 			return secret, nil
 		})
 		if err != nil {
-			return c.JSON(http.StatusUnauthorized, err)
+			return error2.HandleError(c, errors.Unauthorized.New(err.Error()))
 		}
 
 		if !tkn.Valid {
-			return c.JSON(http.StatusUnauthorized, "invalid")
+			error2.HandleError(c, errors.Unauthorized.New("authentication is not valid"))
 		}
 
 		return next(c)
@@ -70,7 +77,13 @@ func (jt *JwtToken) VerifyToken(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func (jt *JwtToken) getToken(c echo.Context) string {
+	tokenStr := ""
 	bearer := c.Request().Header.Get("Authorization")
-	tokenStr := strings.Split(bearer, " ")[1]
+	tokenStr = strings.Split(bearer, " ")[1]
+
+	if tokenStr == "" {
+		tokenStr = c.Request().Header.Get("token")
+	}
+
 	return tokenStr
 }

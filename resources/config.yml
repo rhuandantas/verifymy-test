@@ -14,5 +14,5 @@ db:
     password-key: DB_USER_PASS
     user-key: DB_USER_NAME
 
-logs:
+log:
   level: debug
