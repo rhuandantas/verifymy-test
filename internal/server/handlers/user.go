@@ -175,7 +175,7 @@ func (uh *UserHandler) GetById(ctx echo.Context) error {
 // @Failure      400,401,404,500  {object}  error.ErrorResponse
 // @Router       /users [get]
 func (uh *UserHandler) GetUsers(ctx echo.Context) error {
-	pagination, err := uh.GetPagination(ctx)
+	pagination, err := uh.getPagination(ctx)
 	if err != nil {
 		return err
 	}
@@ -227,7 +227,7 @@ func (uh *UserHandler) Login(ctx echo.Context) error {
 	return serverErr.ResponseJson(ctx, echo.Map{"token": token})
 }
 
-func (uh *UserHandler) GetPagination(ctx echo.Context) (*models.Pagination, error) {
+func (uh *UserHandler) getPagination(ctx echo.Context) (*models.Pagination, error) {
 	var (
 		pagination models.Pagination
 		err        error
