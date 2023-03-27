@@ -5,6 +5,7 @@ import (
 	"github.com/rhuandantas/verifymy-test/internal/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
 )
 
 //go:generate mockgen -source=$GOFILE -package=mock_log -destination=../../test/mock/log/$GOFILE
@@ -58,19 +59,21 @@ func (il *SimpleLoggerImpl) Warn(args ...interface{}) {
 
 func NewLogger(configStore config.ConfigProvider) SimpleLogger {
 	zapLevel := zap.NewAtomicLevel()
-	err := zapLevel.UnmarshalText([]byte(configStore.GetString("log.level")))
+	logLevel := configStore.GetString("log.level")
+	err := zapLevel.UnmarshalText([]byte(logLevel))
 	if err != nil {
 		fmt.Printf("can't configure logger - %v\n", err)
 	}
 
 	logger, _ := zap.Config{
-		Encoding:    "json",
-		Level:       zapLevel,
-		OutputPaths: []string{"stdout"},
+		Encoding:         "json",
+		Level:            zapLevel,
+		OutputPaths:      []string{os.Stdout.Name()},
+		ErrorOutputPaths: []string{os.Stderr.Name()},
 		EncoderConfig: zapcore.EncoderConfig{
 			MessageKey:  "message",
 			LevelKey:    "level",
-			EncodeLevel: zapcore.CapitalLevelEncoder,
+			EncodeLevel: zapcore.LowercaseLevelEncoder,
 
 			TimeKey:    "time",
 			EncodeTime: zapcore.ISO8601TimeEncoder,

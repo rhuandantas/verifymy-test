@@ -10,17 +10,18 @@ import (
 	"time"
 )
 
-//go:generate mockgen -source=$GOFILE -package=mock_auth -destination=../../test/mock/auth/$GOFILE
+//go:generate mockgen -source=$GOFILE -package=mock_auth -destination=../../../../test/mock/auth/$GOFILE
 
 type Token interface {
 	GenerateToken(email string) (string, error)
+	VerifyToken(next echo.HandlerFunc) echo.HandlerFunc
 }
 
 type JwtToken struct {
 	config config.ConfigProvider
 }
 
-func NewJwtToken(config config.ConfigProvider) *JwtToken {
+func NewJwtToken(config config.ConfigProvider) Token {
 	return &JwtToken{
 		config: config,
 	}
@@ -69,7 +70,7 @@ func (jt *JwtToken) VerifyToken(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		if !tkn.Valid {
-			error2.HandleError(c, errors.Unauthorized.New("authentication is not valid"))
+			return error2.HandleError(c, errors.Unauthorized.New("authentication is not valid"))
 		}
 
 		return next(c)
@@ -78,8 +79,11 @@ func (jt *JwtToken) VerifyToken(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (jt *JwtToken) getToken(c echo.Context) string {
 	tokenStr := ""
-	bearer := c.Request().Header.Get("Authorization")
-	tokenStr = strings.Split(bearer, " ")[1]
+	if bearer := c.Request().Header.Get("Authorization"); bearer != "" {
+		if strings.Contains(bearer, "Bearer") {
+			tokenStr = strings.Split(bearer, " ")[1]
+		}
+	}
 
 	if tokenStr == "" {
 		tokenStr = c.Request().Header.Get("token")
