@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/rhuandantas/verifymy-test/internal/config"
@@ -13,6 +14,11 @@ import (
 
 type DBConnection interface {
 	GetDB() *gorm.DB
+	First(ctx context.Context, dest interface{}, conds ...interface{}) *gorm.DB
+	FindAll(ctx context.Context, offset, page int, query interface{}, dest interface{}, args ...interface{}) *gorm.DB
+	Insert(ctx context.Context, value interface{}) *gorm.DB
+	Update(ctx context.Context, value interface{}) *gorm.DB
+	Delete(ctx context.Context, value interface{}, conds ...interface{}) *gorm.DB
 }
 
 type MysqlORMConnection struct {
@@ -20,7 +26,31 @@ type MysqlORMConnection struct {
 	config config.ConfigProvider
 }
 
-func (conn MysqlORMConnection) GetDB() *gorm.DB {
+func (conn *MysqlORMConnection) Delete(ctx context.Context, value interface{}, conds ...interface{}) *gorm.DB {
+	return conn.GetDB().WithContext(ctx).Delete(value, conds)
+}
+
+func (conn *MysqlORMConnection) Update(ctx context.Context, value interface{}) *gorm.DB {
+	return conn.GetDB().WithContext(ctx).Save(value)
+}
+
+func (conn *MysqlORMConnection) Insert(ctx context.Context, value interface{}) *gorm.DB {
+	return conn.GetDB().WithContext(ctx).Create(value)
+}
+
+func (conn *MysqlORMConnection) FindAll(ctx context.Context, offset, page int, query interface{}, dest interface{}, args ...interface{}) *gorm.DB {
+	return conn.GetDB().
+		WithContext(ctx).
+		Limit(offset).
+		Offset(page).
+		Select(query, args...).Find(dest)
+}
+
+func (conn *MysqlORMConnection) First(ctx context.Context, dest interface{}, conds ...interface{}) *gorm.DB {
+	return conn.GetDB().WithContext(ctx).First(dest, conds)
+}
+
+func (conn *MysqlORMConnection) GetDB() *gorm.DB {
 	return conn.db
 }
 
