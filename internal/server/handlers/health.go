@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//go:generate mockgen -source=$GOFILE -package=mock_handlers -destination=../../../test/mock/handlers/$GOFILE
 type HealthCheck struct{}
 
 func NewHealthCheck() *HealthCheck {
@@ -14,17 +15,33 @@ func NewHealthCheck() *HealthCheck {
 
 // RegisterHealth register the liveness and readiness probe endpoints
 func (h *HealthCheck) RegisterHealth(server *echo.Echo) {
-	server.GET("/liveness", h.liveness)
-	server.GET("/readiness", h.readiness)
+	server.GET("/liveness", h.Liveness)
+	server.GET("/readiness", h.Readiness)
 }
 
-func (h *HealthCheck) liveness(c echo.Context) error {
+// Liveness godoc
+// @Summary Show the status of server.
+// @Description get the status of server.
+// @Tags Health
+// @Accept */*
+// @Produce json
+// @Success 200 {string} string "token"
+// @Router /liveness [get]
+func (h *HealthCheck) Liveness(c echo.Context) error {
 	response := make(map[string]string)
 	response["status"] = "UP"
 	return c.JSON(http.StatusOK, response)
 }
 
-func (h *HealthCheck) readiness(c echo.Context) error {
+// Readiness godoc
+// @Summary Show the status of server.
+// @Description get the status of server.
+// @Tags Health
+// @Accept */*
+// @Produce json
+// @Success 200 {string} string "OK"
+// @Router /readiness [get]
+func (h *HealthCheck) Readiness(c echo.Context) error {
 	response := make(map[string]string)
 	response["status"] = "OK"
 	return c.JSON(http.StatusOK, response)

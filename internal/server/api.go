@@ -6,9 +6,11 @@ import (
 	"github.com/joomcode/errorx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	_ "github.com/rhuandantas/verifymy-test/docs"
 	"github.com/rhuandantas/verifymy-test/internal/config"
 	"github.com/rhuandantas/verifymy-test/internal/log"
 	"github.com/rhuandantas/verifymy-test/internal/server/handlers"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"go.uber.org/zap"
 )
 
@@ -49,6 +51,8 @@ func NewAPIServer(config config.ConfigProvider, logger log.SimpleLogger, userHan
 			return nil
 		},
 	}))
+
+	app.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	return &HttpServer{
 		appName:       &appName,

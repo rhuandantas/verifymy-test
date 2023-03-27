@@ -14,13 +14,13 @@ import (
 )
 
 type UserHandler struct {
-	validator *util.CustomValidator
+	validator util.Validator
 	userRepo  repo.UserRepo
-	token     *auth.JwtToken
+	token     auth.Token
 	logger    log.SimpleLogger
 }
 
-func NewUserHandler(validator *util.CustomValidator, userRepo repo.UserRepo, jwt *auth.JwtToken, logger log.SimpleLogger) *UserHandler {
+func NewUserHandler(validator util.Validator, userRepo repo.UserRepo, jwt auth.Token, logger log.SimpleLogger) *UserHandler {
 	return &UserHandler{
 		validator: validator,
 		userRepo:  userRepo,
@@ -31,15 +31,25 @@ func NewUserHandler(validator *util.CustomValidator, userRepo repo.UserRepo, jwt
 
 func (uh *UserHandler) RegisterRoutes(server *echo.Echo) {
 	g := server.Group("/users", uh.token.VerifyToken)
-	g.POST("", uh.create)
-	g.PUT("/:id", uh.update)
-	g.DELETE("/:id", uh.delete)
-	g.GET("/:id", uh.getById)
-	g.GET("", uh.getUsers)
+	g.POST("", uh.Create)
+	g.PUT("/:id", uh.Update)
+	g.DELETE("/:id", uh.Delete)
+	g.GET("/:id", uh.GetById)
+	g.GET("", uh.GetUsers)
 	server.POST("/login", uh.Login)
 }
 
-func (uh *UserHandler) create(ctx echo.Context) error {
+// Create godoc
+// @Summary Create a new user.
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body models.User true "user struct"
+// @Security JWT
+// @Success 	 200  {object} models.User
+// @Failure      400,401,404,500  {object}  error.ErrorResponse
+// @Router /users [post]
+func (uh *UserHandler) Create(ctx echo.Context) error {
 	var (
 		user models.User
 		err  error
@@ -65,7 +75,18 @@ func (uh *UserHandler) create(ctx echo.Context) error {
 	return serverErr.ResponseJson(ctx, res)
 }
 
-func (uh *UserHandler) update(ctx echo.Context) error {
+// Update godoc
+// @Summary Update a user.
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param        id   path      int  true  "user id"
+// @Param user body models.User true "user struct"
+// @Security JWT
+// @Success 	 200  {object} models.User
+// @Failure      400,401,404,500  {object}  error.ErrorResponse
+// @Router /users/{id} [put]
+func (uh *UserHandler) Update(ctx echo.Context) error {
 	var (
 		user models.User
 		err  error
@@ -93,7 +114,17 @@ func (uh *UserHandler) update(ctx echo.Context) error {
 	return serverErr.ResponseJson(ctx, res)
 }
 
-func (uh *UserHandler) delete(ctx echo.Context) error {
+// Delete godoc
+// @Summary      Delete a user by id
+// @Description  Delete user by ID
+// @Tags         Users
+// @Produce      json
+// @Param        id   path      int  true  "user id"
+// @Security JWT
+// @Success      200  {string}  "user deleted"
+// @Failure      400,401,404,500  {object}  error.ErrorResponse
+// @Router       /users/{id} [Delete]
+func (uh *UserHandler) Delete(ctx echo.Context) error {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
@@ -107,7 +138,17 @@ func (uh *UserHandler) delete(ctx echo.Context) error {
 	return serverErr.ResponseJson(ctx, res)
 }
 
-func (uh *UserHandler) getById(ctx echo.Context) error {
+// GetById godoc
+// @Summary      Retrieve a user by id
+// @Description  get user by ID
+// @Tags         Users
+// @Produce      json
+// @Param        id   path      int  true  "user id"
+// @Security JWT
+// @Success      200  {object}  models.User
+// @Failure      400,401,404,500  {object}  error.ErrorResponse
+// @Router       /users/{id} [get]
+func (uh *UserHandler) GetById(ctx echo.Context) error {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
@@ -122,18 +163,24 @@ func (uh *UserHandler) getById(ctx echo.Context) error {
 	return serverErr.ResponseJson(ctx, res)
 }
 
-func (uh *UserHandler) getUsers(ctx echo.Context) error {
-	page, err := strconv.Atoi(ctx.QueryParam("page"))
+// GetUsers godoc
+// @Summary      Retrieve all users
+// @Description  get all users
+// @Tags         Users
+// @Produce      json
+// @Param        page   query      int  true  "page number"
+// @Param        size   query      int  true  "size number"
+// @Security JWT
+// @Success      200  {array}  models.User
+// @Failure      400,401,404,500  {object}  error.ErrorResponse
+// @Router       /users [get]
+func (uh *UserHandler) GetUsers(ctx echo.Context) error {
+	pagination, err := uh.GetPagination(ctx)
 	if err != nil {
-		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
+		return err
 	}
 
-	offset, err := strconv.Atoi(ctx.QueryParam("size"))
-	if err != nil {
-		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
-	}
-
-	res, err := uh.userRepo.GetUsers(ctx.Request().Context(), offset, page)
+	res, err := uh.userRepo.GetUsers(ctx.Request().Context(), pagination.Size, pagination.Page)
 	if err != nil {
 		return serverErr.HandleError(ctx, errorx.InternalError.New(err.Error()))
 	}
@@ -141,6 +188,14 @@ func (uh *UserHandler) getUsers(ctx echo.Context) error {
 	return serverErr.ResponseJson(ctx, res)
 }
 
+// Login godoc
+// @Summary      Login
+// @Tags         Auth
+// @Produce      json
+// @Param user body models.User true "user struct"
+// @Success      200  {string} token ""
+// @Failure      400,401,404,500  {object}  error.ErrorResponse
+// @Router       /login [post]
 func (uh *UserHandler) Login(ctx echo.Context) error {
 	var (
 		user models.User
@@ -170,4 +225,21 @@ func (uh *UserHandler) Login(ctx echo.Context) error {
 	}
 
 	return serverErr.ResponseJson(ctx, echo.Map{"token": token})
+}
+
+func (uh *UserHandler) GetPagination(ctx echo.Context) (*models.Pagination, error) {
+	var (
+		pagination models.Pagination
+		err        error
+	)
+
+	if err = ctx.Bind(&pagination); err != nil {
+		return nil, serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
+	}
+
+	if err = uh.validator.ValidateStruct(pagination); err != nil {
+		return nil, serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
+	}
+
+	return &pagination, nil
 }
