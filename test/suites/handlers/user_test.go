@@ -190,7 +190,7 @@ var _ = Describe("Test all handlers methods", func() {
 	Context("Call user delete handler", func() {
 		It("successfully", func(ctx SpecContext) {
 			userRepo.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(true, nil)
-			req := httptest.NewRequest(http.MethodDelete, "/users", strings.NewReader(""))
+			req := httptest.NewRequest(http.MethodDelete, "/users", nil)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 			c.SetPath("/:id")
@@ -203,7 +203,7 @@ var _ = Describe("Test all handlers methods", func() {
 		})
 
 		It("path param id is missing", func(ctx SpecContext) {
-			req := httptest.NewRequest(http.MethodDelete, "/users", strings.NewReader(""))
+			req := httptest.NewRequest(http.MethodDelete, "/users", nil)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 			err := userHandler.Delete(c)
@@ -214,7 +214,7 @@ var _ = Describe("Test all handlers methods", func() {
 
 		It("delete user repo fails", func(ctx SpecContext) {
 			userRepo.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(false, errors.New("mock error"))
-			req := httptest.NewRequest(http.MethodDelete, "/users", strings.NewReader(""))
+			req := httptest.NewRequest(http.MethodDelete, "/users", nil)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 			c.SetPath("/:id")
@@ -230,7 +230,7 @@ var _ = Describe("Test all handlers methods", func() {
 	Context("Call get user by id handler", func() {
 		It("successfully", func(ctx SpecContext) {
 			userRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.User{}, nil)
-			req := httptest.NewRequest(http.MethodGet, "/users", strings.NewReader(""))
+			req := httptest.NewRequest(http.MethodGet, "/users", nil)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 			c.SetPath("/:id")
@@ -243,7 +243,7 @@ var _ = Describe("Test all handlers methods", func() {
 		})
 
 		It("path param id is missing", func(ctx SpecContext) {
-			req := httptest.NewRequest(http.MethodGet, "/users", strings.NewReader(""))
+			req := httptest.NewRequest(http.MethodGet, "/users", nil)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 			err := userHandler.GetById(c)
@@ -254,7 +254,7 @@ var _ = Describe("Test all handlers methods", func() {
 
 		It("get by id repo fails", func(ctx SpecContext) {
 			userRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("mock error"))
-			req := httptest.NewRequest(http.MethodGet, "/users", strings.NewReader(""))
+			req := httptest.NewRequest(http.MethodGet, "/users", nil)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 			c.SetPath("/:id")
@@ -284,95 +284,25 @@ var _ = Describe("Test all handlers methods", func() {
 		})
 	})
 
-	Context("Call login handler", func() {
+	Context("Call token handler", func() {
 		It("successfully", func(ctx SpecContext) {
-			userJSON := `{"email":"jon@labstack.com","password":"12345"}`
 			tokenJwt.EXPECT().GenerateToken(gomock.Any()).Return("", nil)
-			mockUser.Password = "$2a$10$g1BebFwhxXMbsAn4G7rj4..u6pkVogpGlE8clTY3PXartfNsIDNmG"
-			userRepo.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(&mockUser, nil)
-			req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(userJSON))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			req := httptest.NewRequest(http.MethodGet, "/token", nil)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
-			err := userHandler.Login(c)
+			err := userHandler.Token(c)
 			Expect(err).To(BeNil())
 			Expect(c.Response()).ToNot(BeNil())
 			Expect(c.Response().Status).To(Equal(200))
 		})
 
-		It("email empty", func(ctx SpecContext) {
-			userJSON := `{"email":"","password":"12345"}`
-			req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(userJSON))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			c := e.NewContext(req, rec)
-			err := userHandler.Login(c)
-			Expect(err).To(BeNil())
-			Expect(c.Response()).ToNot(BeNil())
-			Expect(c.Response().Status).To(Equal(401))
-		})
-
-		It("password empty", func(ctx SpecContext) {
-			userJSON := `{"email":"teste","password":""}`
-			req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(userJSON))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			c := e.NewContext(req, rec)
-			err := userHandler.Login(c)
-			Expect(err).To(BeNil())
-			Expect(c.Response()).ToNot(BeNil())
-			Expect(c.Response().Status).To(Equal(401))
-		})
-
-		It("successfully", func(ctx SpecContext) {
-			userJSON := `{"email":"jon@labstack.com","password":12345}`
-			req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(userJSON))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			c := e.NewContext(req, rec)
-			err := userHandler.Login(c)
-			Expect(err).To(BeNil())
-			Expect(c.Response()).ToNot(BeNil())
-			Expect(c.Response().Status).To(Equal(400))
-		})
-
-		It("successfully", func(ctx SpecContext) {
-			userJSON := `{"email":"jon@labstack.com","password":"12345"}`
-			userRepo.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(nil, errors.New("mock error"))
-			req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(userJSON))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			c := e.NewContext(req, rec)
-			err := userHandler.Login(c)
-			Expect(err).To(BeNil())
-			Expect(c.Response()).ToNot(BeNil())
-			Expect(c.Response().Status).To(Equal(401))
-		})
-
-		It("wrong password", func(ctx SpecContext) {
-			userJSON := `{"email":"jon@labstack.com","password":"123453"}`
-			mockUser.Password = "$2a$10$g1BebFwhxXMbsAn4G7rj4..u6pkVogpGlE8clTY3PXartfNsIDNmG"
-			userRepo.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(&mockUser, nil)
-			req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(userJSON))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			c := e.NewContext(req, rec)
-			err := userHandler.Login(c)
-			Expect(err).To(BeNil())
-			Expect(c.Response()).ToNot(BeNil())
-			Expect(c.Response().Status).To(Equal(401))
-		})
-
 		It("generate token fails", func(ctx SpecContext) {
-			userJSON := `{"email":"jon@labstack.com","password":"12345"}`
 			tokenJwt.EXPECT().GenerateToken(gomock.Any()).Return("", errors.New("mock error"))
-			mockUser.Password = "$2a$10$g1BebFwhxXMbsAn4G7rj4..u6pkVogpGlE8clTY3PXartfNsIDNmG"
-			userRepo.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(&mockUser, nil)
-			req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(userJSON))
+			req := httptest.NewRequest(http.MethodGet, "/token", nil)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
-			err := userHandler.Login(c)
+			err := userHandler.Token(c)
 			Expect(err).To(BeNil())
 			Expect(c.Response()).ToNot(BeNil())
 			Expect(c.Response().Status).To(Equal(500))

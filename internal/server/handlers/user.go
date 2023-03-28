@@ -36,7 +36,7 @@ func (uh *UserHandler) RegisterRoutes(server *echo.Echo) {
 	g.DELETE("/:id", uh.Delete)
 	g.GET("/:id", uh.GetById)
 	g.GET("", uh.GetUsers)
-	server.POST("/login", uh.Login)
+	server.GET("/token", uh.Token)
 }
 
 // Create godoc
@@ -135,7 +135,9 @@ func (uh *UserHandler) Delete(ctx echo.Context) error {
 		return serverErr.HandleError(ctx, errorx.InternalError.New(err.Error()))
 	}
 
-	return serverErr.ResponseJson(ctx, res)
+	return serverErr.ResponseJson(ctx, echo.Map{
+		"deleted": res,
+	})
 }
 
 // GetById godoc
@@ -188,38 +190,19 @@ func (uh *UserHandler) GetUsers(ctx echo.Context) error {
 	return serverErr.ResponseJson(ctx, res)
 }
 
-// Login godoc
-// @Summary      Login
+// Token godoc
+// @Summary      Token
 // @Tags         Auth
 // @Produce      json
-// @Param user body models.User true "user struct"
 // @Success      200  {string} token ""
 // @Failure      400,401,404,500  {object}  error.ErrorResponse
-// @Router       /login [post]
-func (uh *UserHandler) Login(ctx echo.Context) error {
+// @Router       /token [get]
+func (uh *UserHandler) Token(ctx echo.Context) error {
 	var (
-		user models.User
-		err  error
+		err error
 	)
 
-	if err = ctx.Bind(&user); err != nil {
-		return serverErr.HandleError(ctx, errx.BadRequest.New(err.Error()))
-	}
-
-	if user.Email == "" || user.Password == "" {
-		return serverErr.HandleError(ctx, errx.Unauthorized.New("email or password invalid"))
-	}
-
-	res, err := uh.userRepo.GetByEmail(ctx.Request().Context(), user.Email)
-	if err != nil {
-		return serverErr.HandleError(ctx, errx.Unauthorized.New("email or password invalid"))
-	}
-
-	if err = user.VerifyPassword(res.Password); err != nil {
-		return serverErr.HandleError(ctx, errx.Unauthorized.New(err.Error()))
-	}
-
-	token, err := uh.token.GenerateToken(user.Email)
+	token, err := uh.token.GenerateToken("admin")
 	if err != nil {
 		return serverErr.HandleError(ctx, errorx.InternalError.New(err.Error()))
 	}
