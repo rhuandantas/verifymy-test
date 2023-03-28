@@ -2,14 +2,16 @@
 
 ## Requirements
 
-- Run swag to generate api documentation
+### Install
+
 ```sh
-swag init
+go install github.com/onsi/ginkgo/v2/ginkgo
+go install github.com/google/wire/cmd/wire@latest
+go install github.com/swaggo/swag/cmd/swag@latest
+go install github.com/golang/mock/mockgen@v1.6.0
 ```
-- Run this command to generate dependency injection and mock test files
-```sh
-go generate ./...
-```
+
+### Configs
 
 - set env vars
 ```sh
@@ -20,17 +22,27 @@ export DB_USER_NAME={db_name}
 - some application configurations can be set into ``resources/config.yml``
 - to build database (myqsl) container run ``docker-compose up -d``
 ---
-### to run application
+### run application
+
+- Run swag to generate api documentation
 ```sh
-go main .
+swag init
+```
+- Run this command to generate dependency injection and mock test files
+```sh
+go generate ./...
+```
+- run project
+```sh
+go run .
 ```
 
-### to run tests
+### run tests
 ```sh
 ginkgo -v ./...
 ```
 
-### to access swagger doc
+### access swagger doc
 ```
 http://localhost:3000/swagger/index.html
 ```
